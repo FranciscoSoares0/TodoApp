@@ -1,0 +1,111 @@
+<div class="container mt-5">
+  <div>
+    <h1 class="mb-3">Todos</h1>
+
+    <!-- Input and Add Button -->
+    <form
+      class="row g-2 d-flex align-items-start mt-3 w-100"
+      [formGroup]="todoForm"
+      (ngSubmit)="addTodo()"
+    >
+      <div class="col-md-10 col-8">
+        <div class="form-group mb-0">
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            placeholder="What needs to be done?"
+            formControlName="title"
+            [ngClass]="{
+              'is-invalid': fc['title'].touched && fc['title'].invalid
+            }"
+          />
+          <div *ngIf="fc['title'].errors?.['required']">
+            <div
+              class="text-danger"
+              *ngIf="fc['title'].touched && fc['title'].invalid"
+            >
+              Please enter the name of the task
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-2 col-4 d-flex align-items-start">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="bi bi-plus-circle-fill"></i>
+        </button>
+      </div>
+    </form>
+
+    <!-- Todo List -->
+    <div class="row mt-4 gap-3">
+      <div *ngIf="isLoading$ | async" class="d-flex align-items-center">
+        <strong role="status">Loading...</strong>
+        <div class="spinner-border text-primary ms-auto" aria-hidden="true"></div>
+      </div>
+
+      <div *ngIf="error$ | async as error" class="alert alert-danger" role="alert">
+        {{ error }}
+      </div>
+      
+      <div class="d-flex align-items-center gap-5" *ngIf="(allTodos$ | async)?.length">
+        <small>{{ activeTodosCount$ | async }} task<span *ngIf="(activeTodosCount$ | async) !== 1">s</span> left</small>
+        <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+            <input type="radio" class="btn-check" name="btnradio" id="all" autocomplete="off" (change)="setFilter('all')" checked>
+            <label class="btn btn-outline-primary" for="all">All</label>
+          
+            <input type="radio" class="btn-check" name="btnradio" id="active" (change)="setFilter('active')" autocomplete="off">
+            <label class="btn btn-outline-primary" for="active">Active</label>
+          
+            <input type="radio" class="btn-check" name="btnradio" id="completed" (change)="setFilter('completed')" autocomplete="off">
+            <label class="btn btn-outline-primary" for="completed">Completed</label>
+          </div>
+          <small class="text-danger cursor-pointer clear-completed" *ngIf="(completedTodosCount$ | async) ?? 0 > 0" (click)="clearAllCompletedTodos()">Clear Completed</small>
+      </div>
+
+      <div class="col">
+        <ul class="list-group">
+            <li class="list-group-item" *ngIf="(filteredTodos$ | async)?.length">
+                <button class="btn btn-sm btn-primary" type="button" (click)="checkUncheckAllTodos()">
+                    <i class="bi bi-caret-down-square"></i>
+                </button>
+                
+            </li>
+          <li
+            *ngFor="let todo of filteredTodos$ | async"
+            class="list-group-item d-flex align-items-center justify-content-between"
+          >
+            <button
+              type="button"
+              class="btn btn-sm"
+              [ngClass]="todo.checked ? 'btn-success' : 'btn-secondary'"
+              (click)="checkUncheckTodo(todo)"
+            >
+              <i
+                [ngClass]="todo.checked ? 'bi bi-check-square' : 'bi bi-square'"
+              ></i>
+            </button>
+            <span class="fw-bold flex-grow-1 ms-3">{{ todo.title }}</span>
+            <div class="d-flex gap-2">
+              <button
+                type="button"
+                class="btn btn-sm btn-warning"
+                [disabled]="todoForm.invalid"
+                (click)="updateTodoTitle(todo)"
+              >
+                <i class="bi bi-pencil-square"></i>
+              </button>
+              <button
+                type="button"
+                class="btn btn-sm btn-danger"
+                (click)="removeTodo(todo)"
+              >
+                <i class="bi bi-x-circle-fill"></i>
+              </button>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
